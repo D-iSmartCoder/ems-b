@@ -1,0 +1,61 @@
+services:
+  mysql-ems-db:
+    image: dismartcoder/mysql:8.0.32
+    container_name: mysql-ems-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Dinesh@123
+      MYSQL_DATABASE: ems_new
+      MYSQL_USER: Dinesh
+      MYSQL_PASSWORD: Dinesh@123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - mysql-log:/var/log/mysql
+    networks:
+      - ems-app-network
+
+  phpmyadmin:
+    image: dismartcoder/phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - "8082:80"
+    restart: always
+    depends_on:
+      - mysql-ems-db
+    environment:
+      PMA_HOST: mysql-ems-db
+      PMA_PORT: 3306
+#      - PMA_ARBITRARY=1
+    networks:
+      - ems-app-network
+
+  spring-boot-ems-app:
+    image: dismartcoder/spring-boot-ems-app:0.0.1
+    container_name: ems-app
+    ports:
+      - "9595:9595"
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    labels:
+      author: "DiSmartCoder email: dineshachalere@gmail.com"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-ems-db:3306/ems_new?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: Dinesh
+      SPRING_DATASOURCE_PASSWORD: Dinesh@123
+    depends_on:
+      - mysql-ems-db
+    networks:
+      - ems-app-network
+
+volumes:
+  mysql-data: {}
+  mysql-log: {}
+
+networks:
+  ems-app-network:
+  # No configuration needed for a basic network
+
+#version: "4.29.0"
